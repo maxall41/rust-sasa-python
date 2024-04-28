@@ -4,4 +4,4 @@ rust-sasa-python is a python library for computing SASA (Solvent Accessible Surf
 See [RustSasa](https://github.com/maxall41/RustSASA) for more info.
 
 ## Documentation
-See (DOCS.md)[https://github.com/maxall41/rust-sasa-python/blob/main/DOCS.md]
+See [DOCS.md](https://github.com/maxall41/rust-sasa-python/blob/main/DOCS.md)
