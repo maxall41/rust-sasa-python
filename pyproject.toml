@@ -11,5 +11,11 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
+description = "An ultra-fast package for computing Solvent Accessible Surface Area (SASA/ASA) for proteins"
+readme = "README.md"
+authors = [
+    { name="Max Campbell" },
+]
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
