@@ -3,68 +3,75 @@ use pyo3::prelude::*;
 use rust_sasa::{SASALevel, SASAResult};
 
 #[pyfunction]
-fn calculate_sasa_at_protein_level(pdb_path: String,probe_radius: Option<f32>,n_points: Option<usize>) -> PyResult<f32> {
-    let (mut pdb, _errors) = pdbtbx::open(
-        pdb_path,
-        StrictnessLevel::Medium
-    ).unwrap();
-    let result = rust_sasa::calculate_sasa(&pdb,probe_radius,n_points,SASALevel::Protein).unwrap();
+fn calculate_sasa_at_protein_level(
+    pdb_path: String,
+    probe_radius: Option<f32>,
+    n_points: Option<usize>,
+) -> PyResult<(f32, f32, f32)> {
+    let (pdb, _errors) = pdbtbx::open(pdb_path, StrictnessLevel::Medium).unwrap();
+    let result =
+        rust_sasa::calculate_sasa(&pdb, probe_radius, n_points, SASALevel::Protein).unwrap();
     return match result {
-        SASAResult::Protein(v) => Ok(v),
-        _ => panic!("This will never run")
+        SASAResult::Protein(v) => Ok((v.global_total, v.non_polar_total, v.polar_total)),
+        _ => panic!("This will never run"),
     };
 }
 
 #[pyfunction]
-fn calculate_sasa_at_residue_level(pdb_path: String,probe_radius: Option<f32>,n_points: Option<usize>) -> PyResult<Vec<f32>> {
-    let (mut pdb, _errors) = pdbtbx::open(
-        pdb_path,
-        StrictnessLevel::Medium
-    ).unwrap();
-    let result = rust_sasa::calculate_sasa(&pdb,probe_radius,n_points,SASALevel::Residue).unwrap();
+fn calculate_sasa_at_residue_level(
+    pdb_path: String,
+    probe_radius: Option<f32>,
+    n_points: Option<usize>,
+) -> PyResult<Vec<(String, f32)>> {
+    let (pdb, _errors) = pdbtbx::open(pdb_path, StrictnessLevel::Medium).unwrap();
+    let result =
+        rust_sasa::calculate_sasa(&pdb, probe_radius, n_points, SASALevel::Residue).unwrap();
     return match result {
         SASAResult::Residue(v) => {
-            let mut temp : Vec<f32> = vec![];
+            let mut temp: Vec<(String, f32)> = vec![];
             for value in v {
-                temp.push(value.value)
+                temp.push((
+                    format!("{}_{}_{}", value.chain_id, value.name, value.serial_number),
+                    value.value,
+                ))
             }
             Ok(temp)
-        },
-        _ => panic!("This will never run")
+        }
+        _ => panic!("This will never run"),
     };
 }
 
 #[pyfunction]
-fn calculate_sasa_at_atom_level(pdb_path: String,probe_radius: Option<f32>,n_points: Option<usize>) -> PyResult<Vec<f32>> {
-    let (mut pdb, _errors) = pdbtbx::open(
-        pdb_path,
-        StrictnessLevel::Medium
-    ).unwrap();
-    let result = rust_sasa::calculate_sasa(&pdb,probe_radius,n_points,SASALevel::Atom).unwrap();
+fn calculate_sasa_at_atom_level(
+    pdb_path: String,
+    probe_radius: Option<f32>,
+    n_points: Option<usize>,
+) -> PyResult<Vec<f32>> {
+    let (pdb, _errors) = pdbtbx::open(pdb_path, StrictnessLevel::Medium).unwrap();
+    let result = rust_sasa::calculate_sasa(&pdb, probe_radius, n_points, SASALevel::Atom).unwrap();
     return match result {
-        SASAResult::Atom(v) => {
-            Ok(v)
-        },
-        _ => panic!("This will never run")
+        SASAResult::Atom(v) => Ok(v),
+        _ => panic!("This will never run"),
     };
 }
 
 #[pyfunction]
-fn calculate_sasa_at_chain_level(pdb_path: String,probe_radius: Option<f32>,n_points: Option<usize>) -> PyResult<Vec<f32>> {
-    let (mut pdb, _errors) = pdbtbx::open(
-        pdb_path,
-        StrictnessLevel::Medium
-    ).unwrap();
-    let result = rust_sasa::calculate_sasa(&pdb,probe_radius,n_points,SASALevel::Chain).unwrap();
+fn calculate_sasa_at_chain_level(
+    pdb_path: String,
+    probe_radius: Option<f32>,
+    n_points: Option<usize>,
+) -> PyResult<Vec<f32>> {
+    let (pdb, _errors) = pdbtbx::open(pdb_path, StrictnessLevel::Medium).unwrap();
+    let result = rust_sasa::calculate_sasa(&pdb, probe_radius, n_points, SASALevel::Chain).unwrap();
     return match result {
         SASAResult::Chain(v) => {
-            let mut temp : Vec<f32> = vec![];
+            let mut temp: Vec<f32> = vec![];
             for value in v {
                 temp.push(value.value)
             }
             Ok(temp)
-        },
-        _ => panic!("This will never run")
+        }
+        _ => panic!("This will never run"),
     };
 }
 

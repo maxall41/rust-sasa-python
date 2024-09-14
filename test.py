@@ -4,7 +4,8 @@ from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB.MMCIFParser import MMCIFParser
 
 start = time.time()
-rust_sasa_python.calculate_sasa_at_residue_level("example.cif")
+v = rust_sasa_python.calculate_sasa_at_residue_level("example.cif")
+print(v)
 end = time.time()
 print("Time for RustSasa:")
 print(end - start)
