@@ -18,7 +18,7 @@ rust_sasa_python.calculate_sasa_at_protein_level("path_to_pdb_file.pdb") # Also 
 
 Signature: calculate_sasa_at_residue_level(pdb_path: String,probe_radius: Option<f32>,n_points: Option<usize>)
 
-Returns: list of tuples <({CHAIN*ID}*{RESIDUE*NAE}*{RESIDUE_INDEX},SASA VALUE as f32)>
+Returns: list of tuples <({CHAIN ID}_{RESIDUE NAME}_{RESIDUE INDEX},SASA VALUE as f32)>
 Example:
 
 ```python
