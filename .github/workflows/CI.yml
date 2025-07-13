@@ -35,9 +35,6 @@ jobs:
           python-version: "3.11"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
-        env:
-          CFLAGS_armv7_unknown_linux_gnueabihf: ${{ matrix.platform.target == 'armv7' && '-O3 -ffunction-sections -fdata-sections -fPIC -Wall -Wextra -ftls-model=initial-exec' || '' }}
-          CFLAGS_aarch64_unknown_linux_gnu: ${{ matrix.platform.target == 'aarch64' && '-O3 -ffunction-sections -fdata-sections -fPIC -Wall -Wextra -ftls-model=initial-exec' || '' }}
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
