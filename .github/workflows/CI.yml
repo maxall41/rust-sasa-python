@@ -138,6 +138,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [linux, windows, macos, sdist, test]
+    if: github.ref_name != 'radical'
     steps:
       - uses: actions/download-artifact@v4
       - name: Publish to PyPI
