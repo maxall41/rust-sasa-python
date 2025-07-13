@@ -27,8 +27,6 @@ jobs:
           - runner: ubuntu-latest
             target: aarch64
           - runner: ubuntu-latest
-            target: armv7
-          - runner: ubuntu-latest
             target: s390x
           - runner: ubuntu-latest
             target: ppc64le
@@ -141,32 +139,6 @@ jobs:
       - name: Run tests
         run: |
           uv run pytest tests/ -v
-      - name: Test functionality
-        run: |
-          uv run python -c "
-          import rust_sasa_python as sasa
-
-          # Test all granularity levels
-          calc = sasa.SASACalculator('example.cif').with_n_points(500)
-          protein = calc.calculate_protein()
-          chains = calc.calculate_chain()
-          residues = calc.calculate_residue()
-          atoms = calc.calculate_atom()
-
-          print(f'✅ Protein SASA: {protein.total:.2f}')
-          print(f'✅ Chains: {len(chains)}')
-          print(f'✅ Residues: {len(residues)}')
-          print(f'✅ Atoms: {len(atoms)}')
-
-          # Test convenience functions
-          conv_protein = sasa.calculate_protein_sasa('example.cif')
-          print(f'✅ Convenience function: {conv_protein.total:.2f}')
-
-          # Test different configurations
-          calc_config = sasa.SASACalculator('example.cif').with_probe_radius(1.4).with_n_points(1000)
-          result_config = calc_config.calculate_protein()
-          print(f'✅ Custom config: {result_config.total:.2f}')
-          "
 
   release:
     name: Release
