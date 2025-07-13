@@ -6,7 +6,7 @@ use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel};
 
 #[pyclass]
 #[derive(Clone)]
-pub struct ProteinResult {
+pub struct Protein {
     #[pyo3(get)]
     pub total: f32,
     #[pyo3(get)]
@@ -16,10 +16,10 @@ pub struct ProteinResult {
 }
 
 #[pymethods]
-impl ProteinResult {
+impl Protein {
     fn __repr__(&self) -> String {
         format!(
-            "SASAResult(total={:.3}, polar={:.3}, non_polar={:.3})",
+            "Protein(total={:.3}, polar={:.3}, non_polar={:.3})",
             self.total, self.polar, self.non_polar
         )
     }
@@ -27,7 +27,7 @@ impl ProteinResult {
 
 #[pyclass]
 #[derive(Clone)]
-pub struct ResidueResult {
+pub struct Residue {
     #[pyo3(get)]
     pub chain_id: String,
     #[pyo3(get)]
@@ -39,10 +39,10 @@ pub struct ResidueResult {
 }
 
 #[pymethods]
-impl ResidueResult {
+impl Residue {
     fn __repr__(&self) -> String {
         format!(
-            "ResidueResult(chain_id='{}', residue_name='{}', residue_number={}, sasa={:.3})",
+            "Residue(chain_id='{}', residue_name='{}', residue_number={}, sasa={:.3})",
             self.chain_id, self.residue_name, self.residue_number, self.sasa
         )
     }
@@ -50,7 +50,7 @@ impl ResidueResult {
 
 #[pyclass]
 #[derive(Clone)]
-pub struct ChainResult {
+pub struct Chain {
     #[pyo3(get)]
     pub chain_id: String,
     #[pyo3(get)]
@@ -58,12 +58,9 @@ pub struct ChainResult {
 }
 
 #[pymethods]
-impl ChainResult {
+impl Chain {
     fn __repr__(&self) -> String {
-        format!(
-            "ChainResult(chain_id='{}', sasa={:.3})",
-            self.chain_id, self.sasa
-        )
+        format!("Chain(chain_id='{}', sasa={:.3})", self.chain_id, self.sasa)
     }
 }
 
@@ -114,7 +111,7 @@ impl SASACalculator {
     ///
     /// Returns:
     ///     SASAResult: Object containing total, polar, and non-polar SASA values
-    pub fn calculate_protein(&self) -> PyResult<ProteinResult> {
+    pub fn calculate_protein(&self) -> PyResult<Protein> {
         let pdb = self.load_pdb()?;
         let mut options = SASAOptions::<ProteinLevel>::new();
 
@@ -127,7 +124,7 @@ impl SASACalculator {
         }
 
         match options.process(&pdb) {
-            Ok(result) => Ok(ProteinResult {
+            Ok(result) => Ok(Protein {
                 total: result.global_total,
                 polar: result.polar_total,
                 non_polar: result.non_polar_total,
@@ -143,7 +140,7 @@ impl SASACalculator {
     ///
     /// Returns:
     ///     List[ChainResult]: List of chain-level SASA results
-    pub fn calculate_chain(&self) -> PyResult<Vec<ChainResult>> {
+    pub fn calculate_chain(&self) -> PyResult<Vec<Chain>> {
         let pdb = self.load_pdb()?;
         let mut options = SASAOptions::<ChainLevel>::new();
 
@@ -159,7 +156,7 @@ impl SASACalculator {
             Ok(results) => {
                 let mut chain_results = Vec::new();
                 for result in results {
-                    chain_results.push(ChainResult {
+                    chain_results.push(Chain {
                         chain_id: result.name,
                         sasa: result.value,
                     });
@@ -177,7 +174,7 @@ impl SASACalculator {
     ///
     /// Returns:
     ///     List[ResidueResult]: List of residue-level SASA results
-    pub fn calculate_residue(&self) -> PyResult<Vec<ResidueResult>> {
+    pub fn calculate_residue(&self) -> PyResult<Vec<Residue>> {
         let pdb = self.load_pdb()?;
         let mut options = SASAOptions::<ResidueLevel>::new();
 
@@ -193,7 +190,7 @@ impl SASACalculator {
             Ok(results) => {
                 let mut residue_results = Vec::new();
                 for result in results {
-                    residue_results.push(ResidueResult {
+                    residue_results.push(Residue {
                         chain_id: result.chain_id,
                         residue_name: result.name,
                         residue_number: result.serial_number as i32,
@@ -272,13 +269,13 @@ impl SASACalculator {
 // Convenience functions for backward compatibility and simple use cases
 #[pyfunction]
 #[pyo3(signature = (pdb_path))]
-pub fn calculate_protein_sasa(pdb_path: String) -> PyResult<ProteinResult> {
+pub fn calculate_protein_sasa(pdb_path: String) -> PyResult<Protein> {
     SASACalculator::new(pdb_path).calculate_protein()
 }
 
 #[pyfunction]
 #[pyo3(signature = (pdb_path))]
-pub fn calculate_residue_sasa(pdb_path: String) -> PyResult<Vec<ResidueResult>> {
+pub fn calculate_residue_sasa(pdb_path: String) -> PyResult<Vec<Residue>> {
     SASACalculator::new(pdb_path).calculate_residue()
 }
 
@@ -290,16 +287,16 @@ pub fn calculate_atom_sasa(pdb_path: String) -> PyResult<Vec<f32>> {
 
 #[pyfunction]
 #[pyo3(signature = (pdb_path))]
-pub fn calculate_chain_sasa(pdb_path: String) -> PyResult<Vec<ChainResult>> {
+pub fn calculate_chain_sasa(pdb_path: String) -> PyResult<Vec<Chain>> {
     SASACalculator::new(pdb_path).calculate_chain()
 }
 
 #[pymodule]
 fn rust_sasa_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<SASACalculator>()?;
-    m.add_class::<ProteinResult>()?;
-    m.add_class::<ResidueResult>()?;
-    m.add_class::<ChainResult>()?;
+    m.add_class::<Protein>()?;
+    m.add_class::<Residue>()?;
+    m.add_class::<Chain>()?;
 
     // Convenience functions
     m.add_function(wrap_pyfunction!(calculate_protein_sasa, m)?)?;
