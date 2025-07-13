@@ -1,33 +1,51 @@
 # rust-sasa-python
 
-rust-sasa-python is a Python library for computing SASA (Solvent Accessible Surface Area) far faster than biopython and other packages.
-See [RustSasa](https://github.com/maxall41/RustSASA) for more info.
+A high-performance **Python library** for computing SASA (Solvent Accessible Surface Area) using Rust as the backend. This library provides a clean, Pythonic interface to the fast RustSASA calculation engine.
 
-## Features:
-- 🦀 Backend written in Pure Rust
-- ⚡️ 3X Faster than Biopython and ~120% faster than Freesasa
-- 🐍 Quick drop-in replacement for Biopython
+## Features
 
-## Usage
+- 🦀 **Pure Rust Backend**: Leverages Rust's performance and safety.
+- ⚡️ **Ludicrous Speed**: **46X** faster than Biopython, **7X** faster than Freesasa.
+- 🐍 **Pythonic Interface**: Clean, intuitive API.
+- 🔧 **Configurable**: Customizable probe radius and sampling points.
+- 📁 **PDB and mmCIF SUPPORT**: Supports both PDB and mmCIF files.
 
-You can now utilize RustSasa within Python to speed up your scripts! Take a look at [rust-sasa-python](https://github.com/maxall41/rust-sasa-python)!
+## Installation
 
-Installation:
-```
+```bash
 pip install rust-sasa-python
 ```
-Example:
+
+## Quick Start
+
 ```python
-from rust_sasa_python import calculate_sasa_at_residue_level
-residue_sasa_values = calculate_sasa_at_residue_level("path_to_pdb_file.pdb") # Also supports mmCIF files!
+import rust_sasa_python as sasa
+
+# Simple calculation - use convenience function
+result = sasa.calculate_protein_sasa("protein.pdb")
+print(f"Total SASA: {result.total:.2f}")
+
+# Builder pattern for more control
+calculator = (sasa.SASACalculator("protein.pdb")
+              .with_probe_radius(1.2)
+              .with_n_points(2000))
+result = calculator.calculate_protein()
+print(f"Total SASA: {result.total:.2f}")
+print(f"Polar SASA: {result.polar:.2f}")
+print(f"Non-polar SASA: {result.non_polar:.2f}")
 ```
-See full docs [here](https://github.com/maxall41/rust-sasa-python/blob/main/DOCS.md)
 
-## Benchmarking
-Benchmarks were performed on an M2 Apple Mac with 8GB of RAM and 8 Cores with the protein AF-A0A2K5XT84-F1 (AlphaFold).
+See [DOCS][DOCS.md] for more information and API reference.
 
-- Biopython: ~150ms
+## Contributing
 
-- Freesasa: ~90ms
+Contributions are welcome! Please feel free to submit issues and pull requests.
 
-- RustSASA: ~40ms
+## License
+
+This project is licensed under the MIT License.
+
+## Related Projects
+
+- [RustSASA](https://github.com/maxall41/RustSASA) - The core Rust library.
+- [DPXRust](https://github.com/maxall41/DPXRust) - Rust library for DPX calculations.

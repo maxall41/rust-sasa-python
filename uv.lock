@@ -1,0 +1,7 @@
+version = 1
+requires-python = ">=3.11"
+
+[[package]]
+name = "rust-sasa-python"
+version = "0.2.0"
+source = { editable = "." }
