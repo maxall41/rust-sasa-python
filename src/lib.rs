@@ -98,7 +98,7 @@ impl SASACalculator {
     /// Set the number of points for surface sampling
     ///
     /// Args:
-    ///     points: Number of sampling points (default: 1000)
+    ///     points: Number of sampling points (default: 100)
     ///
     /// Returns:
     ///     Self for method chaining
@@ -110,7 +110,7 @@ impl SASACalculator {
     /// Calculate SASA at the protein level
     ///
     /// Returns:
-    ///     SASAResult: Object containing total, polar, and non-polar SASA values
+    ///     Protein: Object containing total, polar, and non-polar SASA values
     pub fn calculate_protein(&self) -> PyResult<Protein> {
         let pdb = self.load_pdb()?;
         let mut options = SASAOptions::<ProteinLevel>::new();
@@ -139,7 +139,7 @@ impl SASACalculator {
     /// Calculate SASA at the chain level
     ///
     /// Returns:
-    ///     List[ChainResult]: List of chain-level SASA results
+    ///     List[Chain]: List of chain-level SASA results
     pub fn calculate_chain(&self) -> PyResult<Vec<Chain>> {
         let pdb = self.load_pdb()?;
         let mut options = SASAOptions::<ChainLevel>::new();
@@ -173,7 +173,7 @@ impl SASACalculator {
     /// Calculate SASA at the residue level
     ///
     /// Returns:
-    ///     List[ResidueResult]: List of residue-level SASA results
+    ///     List[Residue]: List of residue-level SASA results
     pub fn calculate_residue(&self) -> PyResult<Vec<Residue>> {
         let pdb = self.load_pdb()?;
         let mut options = SASAOptions::<ResidueLevel>::new();

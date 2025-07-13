@@ -174,16 +174,6 @@ except RuntimeError as e:
     # Handle file not found, parsing errors, etc.
 ```
 
-## Performance Benchmarks
-
-Benchmarks performed on M2 Apple Mac (8GB RAM, 8 cores) with protein AF-A0A2K5XT84-F1:
-
-| Library | Time | Relative Speed |
-|---------|------|----------------|
-| **RustSASA** | ~40ms | **3.75x faster** |
-| Freesasa | ~90ms | 2.25x baseline |
-| Biopython | ~150ms | 1x baseline |
-
 ## Migration from Old API
 
 If you're upgrading from the previous version:
@@ -192,7 +182,7 @@ If you're upgrading from the previous version:
 ```python
 # Old way - function with optional parameters
 total, non_polar, polar = calculate_sasa_at_protein_level(
-    "protein.pdb", probe_radius=1.4, n_points=1000
+    "protein.pdb", probe_radius=1.4, n_points=960
 )
 ```
 
@@ -203,7 +193,7 @@ total, non_polar, polar = calculate_sasa_at_protein_level(
 # New way - builder pattern
 calc = (sasa.SASACalculator("protein.pdb")
         .with_probe_radius(1.4)
-        .with_n_points(1000))
+        .with_n_points(960))
 result = calc.calculate_protein()
 print(result.total, result.non_polar, result.polar)
 ```

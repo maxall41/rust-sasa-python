@@ -15,5 +15,8 @@ description = "An ultra-fast package for computing Solvent Accessible Surface Ar
 readme = "README.md"
 authors = [{ name = "Max Campbell" }]
 
+[project.optional-dependencies]
+dev = ["pytest>=8.4.1", "maturin>=1.5,<2.0"]
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
