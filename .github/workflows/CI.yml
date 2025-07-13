@@ -35,10 +35,6 @@ jobs:
           python-version: "3.11"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
-        env:
-          CRATE_CC_NO_DEFAULTS: ${{ (matrix.platform.target == 'armv7' || matrix.platform.target == 'aarch64') && '1' || '' }}
-          CFLAGS_armv7_unknown_linux_gnueabihf: ${{ matrix.platform.target == 'armv7' && '-O3 -ffunction-sections -fdata-sections -fPIC -Wall -Wextra -ftls-model=initial-exec -DMI_DEBUG=0' || '' }}
-          CFLAGS_aarch64_unknown_linux_gnu: ${{ matrix.platform.target == 'aarch64' && '-O3 -ffunction-sections -fdata-sections -fPIC -Wall -Wextra -ftls-model=initial-exec -DMI_DEBUG=0' || '' }}
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
