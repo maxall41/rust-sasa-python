@@ -84,6 +84,41 @@ atom_results = sasa.calculate_atom_sasa("protein.pdb")
 chain_results = sasa.calculate_chain_sasa("protein.pdb")
 ```
 
+### Low-level Functions
+
+For advanced use cases where you need to calculate SASA for custom atom sets:
+
+**`calculate_sasa_internal(atoms_in: list[tuple[tuple[float, float, float], float, int]], probe_radius: float, n_points: int) -> list[float]`**
+
+Calculate SASA for a set of atoms directly without PDB file parsing.
+
+**Parameters:**
+- `atoms_in`: List of tuples, each containing:
+  - Atom coordinates as `(x, y, z)` tuple of floats
+  - Atom radius as float
+  - Atom index as int
+- `probe_radius`: Probe sphere radius in Ångströms
+- `n_points`: Number of points for surface sampling
+
+**Returns:**
+- List of SASA values (floats) corresponding to each input atom
+
+**Example:**
+```python
+import rust_sasa_python as sasa
+
+# Define atoms: [(coordinates, radius, index), ...]
+atoms = [
+    ((0.0, 0.0, 0.0), 1.7, 0),    # Carbon atom
+    ((2.0, 0.0, 0.0), 1.2, 1),    # Hydrogen atom
+    ((0.0, 2.0, 0.0), 1.55, 2),   # Nitrogen atom
+]
+
+# Calculate SASA
+sasa_values = sasa.calculate_sasa_internal(atoms, probe_radius=1.4, n_points=100)
+print(f"SASA values: {sasa_values}")
+```
+
 ## Usage Examples
 
 ### Basic Usage

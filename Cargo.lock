@@ -661,6 +661,7 @@ dependencies = [
 name = "rust-sasa-python"
 version = "0.2.1"
 dependencies = [
+ "nalgebra",
  "pdbtbx",
  "pyo3",
  "rust-sasa",

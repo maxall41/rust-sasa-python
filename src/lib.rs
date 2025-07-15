@@ -1,8 +1,10 @@
+use nalgebra::Point3;
 use pdbtbx;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use rust_sasa::options::SASAOptions;
-use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel};
+use rust_sasa::{Atom, calculate_sasa_internal as calculate_sasa_internal_internal};
+use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel}; // As in long long
 
 #[pyclass]
 #[derive(Clone)]
@@ -291,6 +293,29 @@ pub fn calculate_chain_sasa(pdb_path: String) -> PyResult<Vec<Chain>> {
     SASACalculator::new(pdb_path).calculate_chain()
 }
 
+#[pyfunction]
+pub fn calculate_sasa_internal(
+    atoms_in: Vec<((f32, f32, f32), f32, usize)>,
+    probe_radius: f32,
+    n_points: usize,
+) -> PyResult<Vec<f32>> {
+    let atoms: Vec<Atom> = atoms_in
+        .into_iter()
+        .map(|(pos, radius, index)| Atom {
+            position: Point3::new(pos.0, pos.1, pos.2),
+            id: index,
+            parent_id: None,
+            radius,
+        })
+        .collect();
+    Ok(calculate_sasa_internal_internal(
+        atoms.as_slice(),
+        probe_radius,
+        n_points,
+        true,
+    ))
+}
+
 #[pymodule]
 fn rust_sasa_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<SASACalculator>()?;
@@ -303,6 +328,7 @@ fn rust_sasa_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(calculate_residue_sasa, m)?)?;
     m.add_function(wrap_pyfunction!(calculate_atom_sasa, m)?)?;
     m.add_function(wrap_pyfunction!(calculate_chain_sasa, m)?)?;
+    m.add_function(wrap_pyfunction!(calculate_sasa_internal, m)?)?;
 
     Ok(())
 }

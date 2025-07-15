@@ -132,3 +132,20 @@ def calculate_chain_sasa(pdb_path: str) -> List[Chain]:
         List[Chain]: List of chain-level SASA results
 
     """
+
+def calculate_sasa_internal(
+    atoms_in: list[tuple[tuple[float, float, float], float, int]],
+    probe_radius: float,
+    n_points: int,
+) -> list[float]:
+    """Calculate SASA for a set of atoms.
+
+    Args:
+        atoms_in: List of atom coordinates, radii, and indices
+        probe_radius: Probe radius
+        n_points: Number of points on the sphere
+
+    Returns:
+        List[float]: List of SASA values
+
+    """

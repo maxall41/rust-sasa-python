@@ -12,3 +12,4 @@ crate-type = ["cdylib"]
 pdbtbx = "0.12.0"
 pyo3 = "0.25.1"
 rust-sasa = "0.3.2"
+nalgebra = "0.33.2"
