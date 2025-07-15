@@ -3,8 +3,9 @@ use pdbtbx;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use rust_sasa::options::SASAOptions;
-use rust_sasa::{Atom, calculate_sasa_internal as calculate_sasa_internal_internal};
+use rust_sasa::{Atom, SASAProcessor, calculate_sasa_internal as calculate_sasa_internal_internal};
 use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel}; // As in long long
+use std::collections::HashMap;
 
 #[pyclass]
 #[derive(Clone)]
@@ -35,7 +36,7 @@ pub struct Residue {
     #[pyo3(get)]
     pub residue_name: String,
     #[pyo3(get)]
-    pub residue_number: i32,
+    pub residue_number: u32,
     #[pyo3(get)]
     pub sasa: f32,
 }
@@ -195,7 +196,7 @@ impl SASACalculator {
                     residue_results.push(Residue {
                         chain_id: result.chain_id,
                         residue_name: result.name,
-                        residue_number: result.serial_number as i32,
+                        residue_number: result.serial_number as u32,
                         sasa: result.value,
                     });
                 }
@@ -316,6 +317,39 @@ pub fn calculate_sasa_internal(
     ))
 }
 
+#[pyfunction]
+fn calculate_sasa_internal_at_residue_level(
+    atoms_in: Vec<((f32, f32, f32), f32, usize)>,
+    probe_radius: f32,
+    n_points: usize,
+) -> PyResult<Vec<Residue>> {
+    let atom_sasa = calculate_sasa_internal(atoms_in.clone(), probe_radius, n_points).unwrap();
+
+    let mut residue_groups: HashMap<usize, Vec<f32>> = HashMap::new();
+
+    for (i, atom) in atoms_in.iter().enumerate() {
+        let parent_id = atom.2;
+        residue_groups
+            .entry(parent_id)
+            .or_insert_with(Vec::new)
+            .push(atom_sasa[i]);
+    }
+
+    let mut residue_sasa = Vec::new();
+    for (parent_id, sasa_values) in residue_groups {
+        let local_sum = sasa_values.iter().sum::<f32>();
+
+        residue_sasa.push(Residue {
+            chain_id: "UNK".to_string(),
+            residue_name: "UNK".to_string(),
+            residue_number: parent_id as u32,
+            sasa: local_sum / sasa_values.len() as f32,
+        });
+    }
+
+    Ok(residue_sasa)
+}
+
 #[pymodule]
 fn rust_sasa_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<SASACalculator>()?;
@@ -329,6 +363,10 @@ fn rust_sasa_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(calculate_atom_sasa, m)?)?;
     m.add_function(wrap_pyfunction!(calculate_chain_sasa, m)?)?;
     m.add_function(wrap_pyfunction!(calculate_sasa_internal, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        calculate_sasa_internal_at_residue_level,
+        m
+    )?)?;
 
     Ok(())
 }

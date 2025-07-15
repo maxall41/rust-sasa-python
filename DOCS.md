@@ -119,6 +119,43 @@ sasa_values = sasa.calculate_sasa_internal(atoms, probe_radius=1.4, n_points=100
 print(f"SASA values: {sasa_values}")
 ```
 
+**`calculate_sasa_internal_at_residue_level(atoms_in: list[tuple[tuple[float, float, float], float, int]], probe_radius: float, n_points: int) -> list[ResidueResult]`**
+
+Calculate SASA at the residue level for a set of atoms directly without PDB file parsing. This function groups atoms by residue ID and calculates the average SASA per atom within each residue.
+
+**Parameters:**
+- `atoms_in`: List of tuples, each containing:
+  - Atom coordinates as `(x, y, z)` tuple of floats
+  - Atom radius as float
+  - Residue ID as int (used to group atoms into residues)
+- `probe_radius`: Probe sphere radius in Ångströms
+- `n_points`: Number of points for surface sampling
+
+**Returns:**
+- List of `ResidueResult` objects with:
+  - `chain_id`: Always "UNK" (unknown)
+  - `residue_name`: Always "UNK" (unknown)
+  - `residue_number`: The residue ID from input
+  - `sasa`: Average SASA per atom in the residue
+
+**Example:**
+```python
+import rust_sasa_python as sasa
+
+# Define atoms with residue grouping
+# Residue 1: two atoms, Residue 2: one atom
+atoms = [
+    ((0.0, 0.0, 0.0), 1.7, 1),    # Carbon in residue 1
+    ((1.5, 0.0, 0.0), 1.2, 1),    # Hydrogen in residue 1
+    ((0.0, 3.0, 0.0), 1.55, 2),   # Nitrogen in residue 2
+]
+
+# Calculate residue-level SASA
+residues = sasa.calculate_sasa_internal_at_residue_level(atoms, probe_radius=1.4, n_points=100)
+for residue in residues:
+    print(f"Residue {residue.residue_number}: {residue.sasa:.2f} Ų (avg per atom)")
+```
+
 ## Usage Examples
 
 ### Basic Usage
