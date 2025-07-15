@@ -35,7 +35,7 @@ print(f"Polar SASA: {result.polar:.2f}")
 print(f"Non-polar SASA: {result.non_polar:.2f}")
 ```
 
-See [DOCS](DOCS.md) for more information and API reference.
+See [DOCS](https://github.com/maxall41/rust-sasa-python/blob/main/DOCS.md) for more information and API reference.
 
 ## Contributing
 
