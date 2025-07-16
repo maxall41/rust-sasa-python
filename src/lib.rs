@@ -4,8 +4,11 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use rust_sasa::options::SASAOptions;
 use rust_sasa::{Atom, SASAProcessor, calculate_sasa_internal as calculate_sasa_internal_internal};
-use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel}; // As in long long
+use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel};
+use simd::simd_sum; // As in long long
 use std::collections::HashMap;
+
+mod simd;
 
 #[pyclass]
 #[derive(Clone)]
@@ -337,13 +340,13 @@ fn calculate_sasa_internal_at_residue_level(
 
     let mut residue_sasa = Vec::new();
     for (parent_id, sasa_values) in residue_groups {
-        let local_sum = sasa_values.iter().sum::<f32>();
+        let local_sum = simd_sum(sasa_values.as_slice());
 
         residue_sasa.push(Residue {
             chain_id: "UNK".to_string(),
             residue_name: "UNK".to_string(),
             residue_number: parent_id as u32,
-            sasa: local_sum / sasa_values.len() as f32,
+            sasa: local_sum,
         });
     }
 
