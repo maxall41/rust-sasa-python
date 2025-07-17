@@ -305,10 +305,11 @@ pub fn calculate_sasa_internal(
 ) -> PyResult<Vec<f32>> {
     let atoms: Vec<Atom> = atoms_in
         .into_iter()
-        .map(|(pos, radius, index)| Atom {
+        .enumerate()
+        .map(|(index, (pos, radius, parent_id))| Atom {
             position: Point3::new(pos.0, pos.1, pos.2),
             id: index,
-            parent_id: None,
+            parent_id: Some(parent_id as isize),
             radius,
         })
         .collect();
