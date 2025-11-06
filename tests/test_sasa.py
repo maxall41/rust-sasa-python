@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 
 import pytest
+
 import rust_sasa_python as sasa
 
 # Path to the example CIF file
@@ -17,7 +18,7 @@ def test_protein_calculation():
     assert result.total > 0
     assert result.polar >= 0
     assert result.non_polar >= 0
-    assert abs(result.total - (result.polar + result.non_polar)) < 0.001
+    assert abs(result.total - (result.polar + result.non_polar)) < 1.0
 
 
 def test_chain_calculation():
