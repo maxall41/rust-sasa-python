@@ -10,6 +10,9 @@ use std::collections::HashMap;
 
 mod simd;
 
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[pyclass]
 #[derive(Clone)]
 pub struct Protein {
