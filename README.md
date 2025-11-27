@@ -5,7 +5,7 @@ A high-performance **Python library** for computing SASA (Solvent Accessible Sur
 ## Features
 
 - 🦀 **Powered by [RustSASA](https://github.com/maxall41/RustSASA)**: Leverages Rust's performance and safety.
-- ⚡️ **Ludicrous Speed**: **46X** faster than Biopython, **7X** faster than Freesasa.
+- ⚡️ **Ludicrous Speed**: **46X** faster than Biopython, **5X** faster than Freesasa.
 - 🐍 **Pythonic Interface**: Clean, intuitive API.
 - 🔧 **Configurable**: Customizable probe radius and sampling points.
 - 📁 **PDB and mmCIF SUPPORT**: Supports both PDB and mmCIF files.
