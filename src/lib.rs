@@ -3,7 +3,7 @@ use pdbtbx;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use rust_sasa::options::SASAOptions;
-use rust_sasa::{Atom, SASAProcessor, calculate_sasa_internal as calculate_sasa_internal_internal};
+use rust_sasa::{Atom, calculate_sasa_internal as calculate_sasa_internal_internal};
 use rust_sasa::{AtomLevel, ChainLevel, ProteinLevel, ResidueLevel};
 use simd::simd_sum; // As in long long
 use std::collections::HashMap;
@@ -79,6 +79,11 @@ pub struct SASACalculator {
     pdb_path: String,
     probe_radius: Option<f32>,
     n_points: Option<usize>,
+    radii_file: Option<String>,
+    threads: isize,
+    include_hydrogens: bool,
+    include_hetatms: bool,
+    allow_vdw_fallback: bool,
 }
 
 #[pymethods]
@@ -89,6 +94,11 @@ impl SASACalculator {
             pdb_path,
             probe_radius: None,
             n_points: None,
+            radii_file: None,
+            threads: -1,
+            include_hydrogens: false,
+            include_hetatms: false,
+            allow_vdw_fallback: false,
         }
     }
 
@@ -116,21 +126,73 @@ impl SASACalculator {
         self.clone()
     }
 
+    /// Set the number of threads for parallel processing
+    ///
+    /// Args:
+    ///     threads: Number of threads (default: -1 uses all cores)
+    ///
+    /// Returns:
+    ///     Self for method chaining
+    pub fn with_threads(&mut self, threads: isize) -> Self {
+        self.threads = threads;
+        self.clone()
+    }
+
+    /// Set whether to include hydrogens in the calculation
+    ///
+    /// Args:
+    ///     include_hydrogens: Whether to include hydrogens (default: false)
+    ///
+    /// Returns:
+    ///     Self for method chaining
+    pub fn with_include_hydrogens(&mut self, include_hydrogens: bool) -> Self {
+        self.include_hydrogens = include_hydrogens;
+        self.clone()
+    }
+
+    /// Set whether to include HETATM records in the calculation
+    ///
+    /// Args:
+    ///     include_hetatms: Whether to include HETATM records (default: false)
+    ///
+    /// Returns:
+    ///     Self for method chaining
+    pub fn with_include_hetatms(&mut self, include_hetatms: bool) -> Self {
+        self.include_hetatms = include_hetatms;
+        self.clone()
+    }
+
+    /// Customize Van der Waals radii file
+    ///
+    /// Args:
+    ///     path: Path to the custom radii file (default: ProtOr by Tasi et al.)
+    ///
+    /// Returns:
+    ///     Self for method chaining
+    pub fn with_radii_file(&mut self, path: &str) -> Self {
+        self.radii_file = Some(path.to_string());
+        self.clone()
+    }
+
+    /// Allow fallback to PDBTBX van der Waals radii when custom radius is not found (default: false)
+    ///
+    /// Args:
+    ///     allow: Whether to allow fallback to PDBTBX van der Waals radii (default: false)
+    ///
+    /// Returns:
+    ///     Self for method chaining
+    pub fn with_allow_vdw_fallback(&mut self, allow: bool) -> Self {
+        self.allow_vdw_fallback = allow;
+        self.clone()
+    }
+
     /// Calculate SASA at the protein level
     ///
     /// Returns:
     ///     Protein: Object containing total, polar, and non-polar SASA values
     pub fn calculate_protein(&self) -> PyResult<Protein> {
         let pdb = self.load_pdb()?;
-        let mut options = SASAOptions::<ProteinLevel>::new();
-
-        if let Some(radius) = self.probe_radius {
-            options = options.with_probe_radius(radius);
-        }
-
-        if let Some(points) = self.n_points {
-            options = options.with_n_points(points);
-        }
+        let options = self.apply_options(SASAOptions::<ProteinLevel>::new())?;
 
         match options.process(&pdb) {
             Ok(result) => Ok(Protein {
@@ -151,15 +213,7 @@ impl SASACalculator {
     ///     List[Chain]: List of chain-level SASA results
     pub fn calculate_chain(&self) -> PyResult<Vec<Chain>> {
         let pdb = self.load_pdb()?;
-        let mut options = SASAOptions::<ChainLevel>::new();
-
-        if let Some(radius) = self.probe_radius {
-            options = options.with_probe_radius(radius);
-        }
-
-        if let Some(points) = self.n_points {
-            options = options.with_n_points(points);
-        }
+        let options = self.apply_options(SASAOptions::<ChainLevel>::new())?;
 
         match options.process(&pdb) {
             Ok(results) => {
@@ -185,15 +239,7 @@ impl SASACalculator {
     ///     List[Residue]: List of residue-level SASA results
     pub fn calculate_residue(&self) -> PyResult<Vec<Residue>> {
         let pdb = self.load_pdb()?;
-        let mut options = SASAOptions::<ResidueLevel>::new();
-
-        if let Some(radius) = self.probe_radius {
-            options = options.with_probe_radius(radius);
-        }
-
-        if let Some(points) = self.n_points {
-            options = options.with_n_points(points);
-        }
+        let options = self.apply_options(SASAOptions::<ResidueLevel>::new())?;
 
         match options.process(&pdb) {
             Ok(results) => {
@@ -221,15 +267,7 @@ impl SASACalculator {
     ///     List[float]: List of atom-level SASA values
     pub fn calculate_atom(&self) -> PyResult<Vec<f32>> {
         let pdb = self.load_pdb()?;
-        let mut options = SASAOptions::<AtomLevel>::new();
-
-        if let Some(radius) = self.probe_radius {
-            options = options.with_probe_radius(radius);
-        }
-
-        if let Some(points) = self.n_points {
-            options = options.with_n_points(points);
-        }
+        let options = self.apply_options(SASAOptions::<AtomLevel>::new())?;
 
         match options.process(&pdb) {
             Ok(results) => Ok(results),
@@ -273,6 +311,29 @@ impl SASACalculator {
             ))),
         }
     }
+
+    fn apply_options<T>(&self, mut options: SASAOptions<T>) -> PyResult<SASAOptions<T>> {
+        if let Some(radius) = self.probe_radius {
+            options = options.with_probe_radius(radius);
+        }
+
+        if let Some(points) = self.n_points {
+            options = options.with_n_points(points);
+        }
+
+        options = options.with_threads(self.threads);
+        options = options.with_include_hydrogens(self.include_hydrogens);
+        options = options.with_include_hetatms(self.include_hetatms);
+        options = options.with_allow_vdw_fallback(self.allow_vdw_fallback);
+
+        if let Some(radii_file) = &self.radii_file {
+            options = options.with_radii_file(radii_file).map_err(|e| {
+                PyRuntimeError::new_err(format!("Failed to load radii file: {}", e))
+            })?;
+        }
+
+        Ok(options)
+    }
 }
 
 // Convenience functions for backward compatibility and simple use cases
@@ -305,6 +366,7 @@ pub fn calculate_sasa_internal(
     atoms_in: Vec<((f32, f32, f32), f32, usize)>,
     probe_radius: f32,
     n_points: usize,
+    threads: isize,
 ) -> PyResult<Vec<f32>> {
     let atoms: Vec<Atom> = atoms_in
         .into_iter()
@@ -320,7 +382,7 @@ pub fn calculate_sasa_internal(
         atoms.as_slice(),
         probe_radius,
         n_points,
-        true,
+        threads,
     ))
 }
 
@@ -329,8 +391,10 @@ fn calculate_sasa_internal_at_residue_level(
     atoms_in: Vec<((f32, f32, f32), f32, usize)>,
     probe_radius: f32,
     n_points: usize,
+    threads: isize,
 ) -> PyResult<Vec<Residue>> {
-    let atom_sasa = calculate_sasa_internal(atoms_in.clone(), probe_radius, n_points).unwrap();
+    let atom_sasa =
+        calculate_sasa_internal(atoms_in.clone(), probe_radius, n_points, threads).unwrap();
 
     let mut residue_groups: HashMap<usize, Vec<f32>> = HashMap::new();
 

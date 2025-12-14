@@ -34,7 +34,27 @@ SASACalculator(pdb_path: str)
 - Returns modified calculator for method chaining
 
 **`with_n_points(points: int) -> SASACalculator`**
-- Set the number of points for surface sampling (default: 1000)
+- Set the number of points for surface sampling (default: 100)
+- Returns modified calculator for method chaining
+
+**`with_threads(threads: int) -> SASACalculator`**
+- Set the number of threads for parallel processing (default: -1 uses all cores)
+- Returns modified calculator for method chaining
+
+**`with_include_hydrogens(include_hydrogens: bool) -> SASACalculator`**
+- Set whether to include hydrogen atoms in the calculation (default: False)
+- Returns modified calculator for method chaining
+
+**`with_include_hetatms(include_hetatms: bool) -> SASACalculator`**
+- Set whether to include HETATM records in the calculation (default: False)
+- Returns modified calculator for method chaining
+
+**`with_radii_file(path: str) -> SASACalculator`**
+- Customize Van der Waals radii by providing a custom radii file (default: ProtOr by Tsai et al.)
+- Returns modified calculator for method chaining
+
+**`with_allow_vdw_fallback(allow: bool) -> SASACalculator`**
+- Allow fallback to PDBTBX van der Waals radii when custom radius is not found (default: False)
 - Returns modified calculator for method chaining
 
 #### Calculation Methods
@@ -88,7 +108,7 @@ chain_results = sasa.calculate_chain_sasa("protein.pdb")
 
 For advanced use cases where you need to calculate SASA for custom atom sets:
 
-**`calculate_sasa_internal(atoms_in: list[tuple[tuple[float, float, float], float, int]], probe_radius: float, n_points: int) -> list[float]`**
+**`calculate_sasa_internal(atoms_in: list[tuple[tuple[float, float, float], float, int]], probe_radius: float, n_points: int, threads: int) -> list[float]`**
 
 Calculate SASA for a set of atoms directly without PDB file parsing.
 
@@ -99,6 +119,7 @@ Calculate SASA for a set of atoms directly without PDB file parsing.
   - Atom index as int
 - `probe_radius`: Probe sphere radius in Ångströms
 - `n_points`: Number of points for surface sampling
+- `threads`: Number of threads for parallel processing (-1 uses all cores)
 
 **Returns:**
 - List of SASA values (floats) corresponding to each input atom
@@ -115,13 +136,13 @@ atoms = [
 ]
 
 # Calculate SASA
-sasa_values = sasa.calculate_sasa_internal(atoms, probe_radius=1.4, n_points=100)
+sasa_values = sasa.calculate_sasa_internal(atoms, probe_radius=1.4, n_points=100, threads=-1)
 print(f"SASA values: {sasa_values}")
 ```
 
-**`calculate_sasa_internal_at_residue_level(atoms_in: list[tuple[tuple[float, float, float], float, int]], probe_radius: float, n_points: int) -> list[ResidueResult]`**
+**`calculate_sasa_internal_at_residue_level(atoms_in: list[tuple[tuple[float, float, float], float, int]], probe_radius: float, n_points: int, threads: int) -> list[ResidueResult]`**
 
-Calculate SASA at the residue level for a set of atoms directly without PDB file parsing. This function groups atoms by residue ID and calculates the average SASA per atom within each residue.
+Calculate SASA at the residue level for a set of atoms directly without PDB file parsing. This function groups atoms by residue ID and calculates the total SASA for each residue.
 
 **Parameters:**
 - `atoms_in`: List of tuples, each containing:
@@ -130,13 +151,14 @@ Calculate SASA at the residue level for a set of atoms directly without PDB file
   - Residue ID as int (used to group atoms into residues)
 - `probe_radius`: Probe sphere radius in Ångströms
 - `n_points`: Number of points for surface sampling
+- `threads`: Number of threads for parallel processing (-1 uses all cores)
 
 **Returns:**
 - List of `ResidueResult` objects with:
   - `chain_id`: Always "UNK" (unknown)
   - `residue_name`: Always "UNK" (unknown)
   - `residue_number`: The residue ID from input
-  - `sasa`: Average SASA per atom in the residue
+  - `sasa`: Total SASA for the residue
 
 **Example:**
 ```python
@@ -151,9 +173,9 @@ atoms = [
 ]
 
 # Calculate residue-level SASA
-residues = sasa.calculate_sasa_internal_at_residue_level(atoms, probe_radius=1.4, n_points=100)
+residues = sasa.calculate_sasa_internal_at_residue_level(atoms, probe_radius=1.4, n_points=100, threads=-1)
 for residue in residues:
-    print(f"Residue {residue.residue_number}: {residue.sasa:.2f} Ų (avg per atom)")
+    print(f"Residue {residue.residue_number}: {residue.sasa:.2f} Ų")
 ```
 
 ## Usage Examples
@@ -233,6 +255,35 @@ for radius in radii:
     calc = sasa.SASACalculator("protein.pdb").with_probe_radius(radius)
     result = calc.calculate_protein()
     print(f"Radius {radius}: {result.total:.2f} Ų")
+```
+
+### Advanced Configuration Examples
+
+```python
+# Include hydrogen atoms in calculation
+calc = (sasa.SASACalculator("protein.pdb")
+        .with_include_hydrogens(True)
+        .with_n_points(2000))
+result = calc.calculate_protein()
+print(f"SASA with hydrogens: {result.total:.2f} Ų")
+
+# Include HETATM records (ligands, ions, water)
+calc = (sasa.SASACalculator("protein.pdb")
+        .with_include_hetatms(True))
+result = calc.calculate_protein()
+print(f"SASA with HETATMs: {result.total:.2f} Ų")
+
+# Control parallelization
+calc = (sasa.SASACalculator("protein.pdb")
+        .with_threads(4))  # Use 4 threads
+result = calc.calculate_protein()
+
+# Use custom Van der Waals radii file
+calc = (sasa.SASACalculator("protein.pdb")
+        .with_radii_file("custom_radii.txt")
+        .with_allow_vdw_fallback(True))  # Fallback to default if not found
+result = calc.calculate_protein()
+print(f"SASA with custom radii: {result.total:.2f} Ų")
 ```
 
 ### Error Handling

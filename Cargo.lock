@@ -244,6 +244,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fnv"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+
+[[package]]
 name = "hash32"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -686,11 +692,12 @@ dependencies = [
 
 [[package]]
 name = "rust-sasa"
-version = "0.5.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdaeea886f82f71b433e7247c7734ffacd6d90efff66ae91f24ffd13cf0e786c"
+checksum = "d92c8f75a02c33d1b3e3f233fa84b39cb127041c07ed77bbd0a25cd3fa07c1c5"
 dependencies = [
  "clap",
+ "fnv",
  "indicatif",
  "mimalloc",
  "nalgebra",
@@ -705,12 +712,13 @@ dependencies = [
 
 [[package]]
 name = "rust-sasa-python"
-version = "0.3.0"
+version = "0.5.0"
 dependencies = [
  "mimalloc",
  "nalgebra",
  "num-complex",
  "pdbtbx",
+ "pulp",
  "pyo3",
  "rust-sasa",
 ]
