@@ -198,9 +198,6 @@ def test_workflow_example():
         assert first_residue.sasa >= 0
 
 
-# ========== Tests for New Configuration Methods ==========
-
-
 def test_with_threads():
     """Test thread configuration."""
     # Test with different thread counts
@@ -372,7 +369,13 @@ def test_calculate_sasa_internal_at_residue_level_with_threads():
     assert len(residues_multi) == 2
     assert len(residues_auto) == 2
 
-    # Results should be nearly identical
+    # Sort by residue_number to ensure consistent ordering
+    residues_single = sorted(residues_single, key=lambda r: r.residue_number)
+    residues_multi = sorted(residues_multi, key=lambda r: r.residue_number)
+    residues_auto = sorted(residues_auto, key=lambda r: r.residue_number)
+
+    # Results should be nearly identical when matched by residue_number
     for r1, r2, r3 in zip(residues_single, residues_multi, residues_auto):
+        assert r1.residue_number == r2.residue_number == r3.residue_number
         assert abs(r1.sasa - r2.sasa) < 0.01
         assert abs(r1.sasa - r3.sasa) < 0.01
