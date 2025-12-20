@@ -372,7 +372,7 @@ pub fn calculate_sasa_internal(
         .into_iter()
         .enumerate()
         .map(|(index, (pos, radius, parent_id))| Atom {
-            position: Point3::new(pos.0, pos.1, pos.2),
+            position: [pos.0, pos.1, pos.2],
             id: index,
             parent_id: Some(parent_id as isize),
             radius,
