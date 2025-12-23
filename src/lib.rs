@@ -1,4 +1,3 @@
-use nalgebra::Point3;
 use pdbtbx;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
