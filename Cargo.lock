@@ -436,9 +436,9 @@ dependencies = [
 
 [[package]]
 name = "rust-sasa"
-version = "0.9.1"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6f7a7e52e93d1869826869f1a3d9212ddf40b829c318d9fc9ee1466f1cb9bbe"
+checksum = "f670125d1727b9c8d30dc66558a669b2278bb03a03b608282c5031147b860684"
 dependencies = [
  "fnv",
  "pdbtbx",
@@ -449,7 +449,7 @@ dependencies = [
 
 [[package]]
 name = "rust-sasa-python"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "mimalloc",
  "num-complex",
