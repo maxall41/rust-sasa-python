@@ -12,8 +12,15 @@ A high-performance **Python library** for computing SASA (Solvent Accessible Sur
 
 ## Installation
 
-```bash
+```shell
+# PyPI
 pip install rust-sasa-python
+
+# conda
+conda install -c conda-forge rust-sasa-python
+
+# mamba
+mamba install -c conda-forge rust-sasa-python
 ```
 
 ## Quick Start
