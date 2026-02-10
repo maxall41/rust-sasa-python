@@ -1,6 +1,6 @@
 # rust-sasa-python
 
-A high-performance **Python library** for computing SASA (Solvent Accessible Surface Area) using Rust as the backend. This library provides a clean, Pythonic interface to the fast RustSASA calculation engine.
+A high-performance **Python library** for computing SASA (Solvent Accessible Surface Area) using Rust as the backend. This library provides a clean, Pythonic interface to the fast RustSASA calculation engine. If you use RustSASA in your research, please [cite it](https://github.com/maxall41/RustSASA#how-to-cite).
 
 ## Features
 
