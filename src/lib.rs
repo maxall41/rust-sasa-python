@@ -12,7 +12,7 @@ mod simd;
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct Protein {
     #[pyo3(get)]
@@ -33,7 +33,7 @@ impl Protein {
     }
 }
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct Residue {
     #[pyo3(get)]
@@ -56,7 +56,7 @@ impl Residue {
     }
 }
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct Chain {
     #[pyo3(get)]
@@ -72,7 +72,7 @@ impl Chain {
     }
 }
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct SASACalculator {
     pdb_path: String,
