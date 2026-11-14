@@ -125,7 +125,8 @@ jobs:
           UV_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
           uv sync --locked --extra dev --no-install-project
-          uv pip install --no-deps --no-index --find-links dist rust-sasa-python
+          # UV_PYTHON selects the base interpreter; install into the project venv.
+          uv pip install --python .venv --no-deps --no-index --find-links dist rust-sasa-python
       - name: Test installed wheel
         env:
           UV_PYTHON: ${{ steps.python.outputs.python-path }}
@@ -164,7 +165,7 @@ jobs:
           MATURIN_PEP517_ARGS: "--locked"
         run: |
           uv sync --locked --extra dev --no-install-project
-          uv pip install --no-deps --no-build-isolation dist/*.tar.gz
+          uv pip install --python .venv --no-deps --no-build-isolation dist/*.tar.gz
           uv run --no-sync pytest tests/ -v
       - name: Upload tested sdist
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
